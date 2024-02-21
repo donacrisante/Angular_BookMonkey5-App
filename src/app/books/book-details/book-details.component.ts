@@ -1,22 +1,32 @@
-/*eslint-disable @typescript-eslint/no-non-null-assertion*/
-
 import { Component } from '@angular/core';
-import { Book } from '../../shared/book';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
+import { Observable } from 'rxjs';
+
 import { BookStoreService } from '../../shared/book-store.service';
+import { Book } from '../../shared/book';
 
 @Component({
   selector: 'bm-book-details',
   templateUrl: './book-details.component.html',
-  styleUrl: './book-details.component.css',
+  styleUrls: ['./book-details.component.css'],
 })
 export class BookDetailsComponent {
-  book?: Book;
+  book$: Observable<Book>;
+
   constructor(
     private service: BookStoreService,
     private route: ActivatedRoute,
+    private router: Router,
   ) {
     const isbn = this.route.snapshot.paramMap.get('isbn')!;
-    this.book = this.service.getSingle(isbn);
+    this.book$ = this.service.getSingle(isbn);
+  }
+
+  removeBook(isbn: string) {
+    if (window.confirm('Remove book?')) {
+      this.service.remove(isbn).subscribe(() => {
+        this.router.navigateByUrl('/books');
+      });
+    }
   }
 }
